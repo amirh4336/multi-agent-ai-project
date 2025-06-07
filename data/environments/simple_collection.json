@@ -15,9 +15,7 @@
     [6, 3],
     [1, 6]
   ],
-  "hazards": [
-    [0,1]
-  ],
+  "hazards": [[0, 1]],
   "agents": [
     {
       "id": "agent_1",
@@ -27,6 +25,11 @@
     {
       "id": "agent_2",
       "position": [7, 0],
+      "energy": 100
+    },
+    {
+      "id": "agent_032",
+      "position": [7, 1],
       "energy": 100
     }
   ]

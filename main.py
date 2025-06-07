@@ -1,9 +1,9 @@
-from src.core.environment import GridWorld
-from src.agents.simple_reflex_agent import SimpleReflexAgent
+import json
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.widgets import Button
-import json
+from src.core.environment import GridWorld
+from src.agents.simple_reflex_agent import SimpleReflexAgent
 
 class InteractiveSimulation:
     def __init__(self, config_path: str):
@@ -34,32 +34,35 @@ class InteractiveSimulation:
         print("Click 'Next Step' to advance the simulation")
     
     def setup_figure(self):
-        """Setup the matplotlib figure with grid and button"""
+        """Setup the matplotlib figure with grid, statistics, and button"""
         # Calculate figure dimensions
         num_agents = len(self.agent_instances)
-        stats_height = max(3, num_agents * 0.8)
+        grid_width = max(12, self.env.grid_size[0] * 1.2)
+        grid_height = self.env.grid_size[1] * 1.2  # Increased grid height
+        stats_height = 8  # Increased height for statistics display to accommodate larger boxes
+        button_height = 0.8  # Height for button area
         
-        self.fig = plt.figure(figsize=(max(12, self.env.grid_size[0] * 1.2), 
-                                    self.env.grid_size[1] + stats_height + 1))
+        # Create figure with adjusted height
+        self.fig = plt.figure(figsize=(grid_width, grid_height + stats_height + button_height))
+        
+        # Use GridSpec for layout
+        from matplotlib.gridspec import GridSpec
+        gs = GridSpec(3, 1, height_ratios=[grid_height, stats_height, button_height], 
+                      hspace=0.3)
         
         # Create main grid subplot
-        self.ax_grid = plt.subplot2grid((3, 1), (0, 0), rowspan=1)
+        self.ax_grid = self.fig.add_subplot(gs[0, 0])
         
         # Create statistics subplot
-        self.ax_stats = plt.subplot2grid((3, 1), (1, 0), rowspan=1)
+        self.ax_stats = self.fig.add_subplot(gs[1, 0])
         
         # Create button axes in figure-normalized coordinates
-        # Button dimensions: 200px width, 40px height
-        button_width = 0.15  # Normalized width (adjust as needed)
-        button_height = 0.05  # Normalized height (adjust as needed)
-        margin_x = 0.02  # Horizontal margin from right edge
-        margin_y = 0.02  # Vertical margin from bottom edge
-        
-        # Position in bottom-right corner
+        button_width = 0.15
+        button_height = 0.04
+        margin_x = 0.02
+        margin_y = 0.02
         left = 1 - button_width - margin_x
         bottom = margin_y
-        
-        # Create button axes
         ax_button = self.fig.add_axes([left, bottom, button_width, button_height])
         
         # Create the Next Step button
@@ -70,9 +73,7 @@ class InteractiveSimulation:
         self.render_current_state()
         
         plt.tight_layout(pad=1.0, h_pad=1.0, w_pad=1.0)
-        plt.subplots_adjust(bottom=0.1)  # Ensure enough space at bottom
-
-
+    
     def next_step(self, event):
         """Execute one step of the simulation"""
         if self.simulation_ended:
@@ -106,7 +107,6 @@ class InteractiveSimulation:
             print("All agents are inactive. Ending simulation.")
             self.simulation_ended = True
             self.show_final_summary()
-            # Change button text to indicate simulation ended
             self.button.label.set_text('Simulation Ended')
             return
         
@@ -120,7 +120,6 @@ class InteractiveSimulation:
         """Render the current state of the grid and statistics"""
         # Clear previous content
         self.ax_grid.clear()
-        self.ax_stats.clear()
         
         # Setup grid
         self.ax_grid.set_xlim(0, self.env.grid_size[0])
@@ -158,10 +157,11 @@ class InteractiveSimulation:
         for agent_id, info in self.env.agents.items():
             x = info["position"].x
             y = info["position"].y
-            triangle = patches.RegularPolygon((x + 0.5, y + 0.5), numVertices=3, radius=0.4, orientation=0,
-                                            color='purple')
+            triangle = patches.RegularPolygon((x + 0.5, y + 0.5), numVertices=3, radius=0.4, 
+                                             orientation=0, color='purple')
             self.ax_grid.add_patch(triangle)
-            self.ax_grid.text(x + 0.5, y + 0.2, agent_id, ha='center', va='center', color='white', fontsize=8)
+            self.ax_grid.text(x + 0.5, y + 0.2, agent_id, ha='center', va='center', 
+                              color='white', fontsize=8)
         
         self.ax_grid.set_aspect('equal')
         self.ax_grid.invert_yaxis()
@@ -171,7 +171,8 @@ class InteractiveSimulation:
         self.display_agent_statistics()
     
     def display_agent_statistics(self):
-        """Display performance metrics and statistics for all agents."""
+        """Display performance metrics and statistics for all agents in a flex-wrap layout"""
+        self.ax_stats.clear()
         self.ax_stats.axis('off')
         
         if not self.env.agent_instances:
@@ -179,55 +180,80 @@ class InteractiveSimulation:
                                 ha='center', va='center', transform=self.ax_stats.transAxes, fontsize=12)
             return
         
-        # Prepare statistics text
-        stats_text = "AGENT PERFORMANCE METRICS & STATISTICS\n"
-        stats_text += "=" * 80 + "\n\n"
+        # Add title
+        self.ax_stats.text(0.5, 0.95, "AGENT PERFORMANCE METRICS", 
+                            transform=self.ax_stats.transAxes, 
+                            fontsize=12, fontweight='bold',
+                            ha='center', va='top')
         
+        # Calculate layout parameters
         total_cells = self.env.grid_size[0] * self.env.grid_size[1]
+        agents = list(self.env.agent_instances.items())
+        num_agents = len(agents)
         
-        for agent_id, agent in self.env.agent_instances.items():
-            # Get basic statistics
+        # Define box dimensions and spacing
+        box_width = 0.30  # Width of each agent box (30% of total width)
+        box_height = 0.70  # Height of each agent box (increased to fit content)
+        margin_x = 0.02   # Horizontal margin between boxes
+        margin_y = 0.08   # Vertical margin between rows
+        start_y = 0.85    # Starting Y position (below title)
+        
+        # Calculate how many boxes fit per row
+        boxes_per_row = int((1.0 - margin_x) / (box_width + margin_x))
+        if boxes_per_row == 0:
+            boxes_per_row = 1
+        
+        # Create agent statistics boxes
+        for i, (agent_id, agent) in enumerate(agents):
+            # Calculate position for this box (row-based with wrapping)
+            row = i // boxes_per_row
+            col = i % boxes_per_row
+            
+            # Calculate box position
+            x_pos = margin_x + col * (box_width + margin_x)
+            y_pos = start_y - row * (box_height + margin_y)
+            
+            # Get agent statistics
             basic_stats = agent.get_statistics_summary()
-            
-            # Calculate explored cells (simplified)
             explored_cells = self.env._calculate_explored_cells(agent)
-            
-            # Get performance metrics
             perf_metrics = agent.get_performance_metrics(
                 total_steps=self.env.step_count,
                 explored_cells=explored_cells,
                 total_cells=total_cells
             )
             
-            # Format agent statistics
-            stats_text += f"AGENT: {agent_id}\n"
-            stats_text += "-" * 40 + "\n"
-            
-            # Basic Statistics
-            stats_text += f"Energy: {basic_stats['energy_remaining']}/{100} "
-            stats_text += f"(Consumed: {basic_stats['energy_consumed']})\n"
-            stats_text += f"Actions Taken: {basic_stats['actions_taken']}\n"
-            stats_text += f"Resources Collected: {basic_stats['resources_collected']}\n"
-            stats_text += f"Goals Reached: {basic_stats['goals_reached']}\n"
+            # Create compact statistics text for this agent
+            stats_text = f"{agent_id}\n"
+            stats_text += f"Energy: {basic_stats['energy_remaining']}/100\n"
+            stats_text += f"Actions: {basic_stats['actions_taken']}\n"
+            stats_text += f"Resources: {basic_stats['resources_collected']}\n"
+            stats_text += f"Goals: {basic_stats['goals_reached']}\n"
             stats_text += f"Collisions: {basic_stats['collisions']}\n"
-            stats_text += f"Carrying Resource: {basic_stats['carrying_resource']}\n"
-            stats_text += f"Last Action: {basic_stats['last_action']}\n"
+            stats_text += f"Carrying: {basic_stats['carrying_resource']}\n"
+            stats_text += f"Last: {basic_stats['last_action']}\n"
+            stats_text += f"Success: {perf_metrics.success_rate:.2f}\n"
+            stats_text += f"Efficiency: {perf_metrics.efficiency_score:.1f}%\n"
+            stats_text += f"Energy Use: {perf_metrics.energy_utilization:.1f}%\n"
+            stats_text += f"Coverage: {perf_metrics.exploration_coverage:.1%}"
             
-            # Performance Metrics
-            stats_text += f"\nPerformance Metrics:\n"
-            stats_text += f"  Success Rate: {perf_metrics.success_rate:.2f}\n"
-            stats_text += f"  Efficiency Score: {perf_metrics.efficiency_score:.2f}%\n"
-            stats_text += f"  Task Completion Time: {perf_metrics.task_completion_time:.2f}\n"
-            stats_text += f"  Energy Utilization: {perf_metrics.energy_utilization:.2f}%\n"
-            stats_text += f"  Collision Frequency: {perf_metrics.collision_frequency}\n"
-            stats_text += f"  Exploration Coverage: {perf_metrics.exploration_coverage:.2%}\n"
+            # Draw box background
+            box_rect = patches.Rectangle((x_pos, y_pos - box_height), box_width, box_height,
+                                        facecolor='lightblue', edgecolor='navy', 
+                                        linewidth=1, alpha=0.7, 
+                                        transform=self.ax_stats.transAxes)
+            self.ax_stats.add_patch(box_rect)
             
-            stats_text += "\n" + "=" * 80 + "\n"
+            # Add agent statistics text
+            self.ax_stats.text(x_pos + box_width/2, y_pos - box_height/2, stats_text,
+                                transform=self.ax_stats.transAxes,
+                                fontfamily='monospace',
+                                fontsize=8,
+                                ha='center', va='center',
+                                color='darkblue')
         
-        # Display the text
-        self.ax_stats.text(0.02, 0.98, stats_text, transform=self.ax_stats.transAxes, 
-                            fontfamily='monospace', fontsize=9, verticalalignment='top',
-                            bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgray", alpha=0.8))
+        # Set limits to prevent clipping
+        self.ax_stats.set_xlim(0, 1)
+        self.ax_stats.set_ylim(0, 1)
     
     def show_final_summary(self):
         """Display final simulation summary"""
@@ -257,7 +283,6 @@ class InteractiveSimulation:
 
 def run_interactive_simulation():
     """Main function to run the interactive simulation"""
-    # Initialize and run the interactive simulation
     sim = InteractiveSimulation("data/environments/simple_collection.json")
     sim.run()
 
