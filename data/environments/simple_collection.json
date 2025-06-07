@@ -23,6 +23,11 @@
       "id": "agent_1",
       "position": [0, 0],
       "energy": 100
+    },
+    {
+      "id": "agent_2",
+      "position": [7, 0],
+      "energy": 100
     }
   ]
 }

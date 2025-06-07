@@ -40,7 +40,7 @@ class InteractiveSimulation:
         stats_height = max(3, num_agents * 0.8)
         
         self.fig = plt.figure(figsize=(max(12, self.env.grid_size[0] * 1.2), 
-                                     self.env.grid_size[1] + stats_height + 1))
+                                    self.env.grid_size[1] + stats_height + 1))
         
         # Create main grid subplot
         self.ax_grid = plt.subplot2grid((3, 1), (0, 0), rowspan=1)
@@ -48,23 +48,19 @@ class InteractiveSimulation:
         # Create statistics subplot
         self.ax_stats = plt.subplot2grid((3, 1), (1, 0), rowspan=1)
         
-        # Create button subplot - positioned in bottom right
-        ax_button = plt.subplot2grid((3, 1), (2, 0), rowspan=1)
-        # Calculate button dimensions: 200px width, 40px height
-        # Convert pixels to figure coordinates (approximate)
-        fig_width_inches = self.fig.get_figwidth()
-        fig_height_inches = self.fig.get_figheight()
-        dpi = self.fig.dpi
+        # Create button axes in figure-normalized coordinates
+        # Button dimensions: 200px width, 40px height
+        button_width = 0.15  # Normalized width (adjust as needed)
+        button_height = 0.05  # Normalized height (adjust as needed)
+        margin_x = 0.02  # Horizontal margin from right edge
+        margin_y = 0.02  # Vertical margin from bottom edge
         
-        button_width_norm = 10 / (fig_width_inches * dpi)  # 200px to normalized units
-        button_height_norm = 50 / (fig_height_inches * dpi)  # 40px to normalized units
+        # Position in bottom-right corner
+        left = 1 - button_width - margin_x
+        bottom = margin_y
         
-        # Position in bottom right with some margin
-        margin = 0.02
-        left = 1 - button_width_norm - margin
-        bottom = margin
-        
-        ax_button.set_position([left, bottom, button_width_norm, button_height_norm])
+        # Create button axes
+        ax_button = self.fig.add_axes([left, bottom, button_width, button_height])
         
         # Create the Next Step button
         self.button = Button(ax_button, 'Next Step', color='lightblue', hovercolor='blue')
@@ -73,9 +69,10 @@ class InteractiveSimulation:
         # Initial render
         self.render_current_state()
         
-        plt.tight_layout()
-        plt.subplots_adjust(bottom=0.1)  # Make room for button
-    
+        plt.tight_layout(pad=1.0, h_pad=1.0, w_pad=1.0)
+        plt.subplots_adjust(bottom=0.1)  # Ensure enough space at bottom
+
+
     def next_step(self, event):
         """Execute one step of the simulation"""
         if self.simulation_ended:
