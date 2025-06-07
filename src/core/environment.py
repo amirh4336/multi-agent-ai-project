@@ -12,12 +12,12 @@ class GridWorld:
         with open(config_path, 'r') as file:
             config = json.load(file)
         self.grid_size = tuple(config["grid_size"])
-        self.walls = set(tuple(pos) for pos in config["walls"])
-        self.goals = set(tuple(pos) for pos in config["goals"])
-        self.resources = set(tuple(pos) for pos in config["resources"])
-        self.hazards = set(tuple(pos) for pos in config["hazards"])
+        self.walls = set(Position(*pos) for pos in config["walls"])
+        self.goals = set(Position(*pos) for pos in config["goals"])
+        self.resources = set(Position(*pos) for pos in config["resources"])
+        self.hazards = set(Position(*pos) for pos in config["hazards"])
         self.agents = {agent["id"]: {
-            "position": Position(x=agent["position"][0], y=agent["position"][1]),
+            "position": Position(*agent["position"]),
             "energy": agent["energy"],
             "carrying": False
         } for agent in config["agents"]}
@@ -83,15 +83,15 @@ class GridWorld:
                 pos = Position(x, y)
                 
                 # Skip walls (they block perception)
-                if (x, y) in self.walls:
+                if pos in self.walls:
                     continue
                     
                 # Determine cell type
-                if (x, y) in self.goals:
+                if pos in self.goals:
                     cell_type = CellType.GOAL
-                elif (x, y) in self.resources:
+                elif pos in self.resources:
                     cell_type = CellType.RESOURCE
-                elif (x, y) in self.hazards:
+                elif pos in self.hazards:
                     cell_type = CellType.HAZARD
                 else:
                     cell_type = CellType.EMPTY
@@ -104,7 +104,7 @@ class GridWorld:
             if other_id == agent_id:
                 continue
                 
-            other_pos = Position(*other_info["position"])
+            other_pos = other_info["position"]  # Already a Position object
             if (abs(current_pos.x - other_pos.x) <= PERCEPTION_RANGE and 
                 abs(current_pos.y - other_pos.y) <= PERCEPTION_RANGE):
                 visible_agents.append(other_pos)
@@ -136,20 +136,20 @@ class GridWorld:
                 ax.text(pos[0]+0.5, pos[1]+0.5, label, ha='center', va='center', fontsize=10)
 
         # Draw walls
-        for x, y in self.walls:
-            draw_cell((x, y), "black", label="Wall")
+        for wall_pos in self.walls:
+            draw_cell((wall_pos.x, wall_pos.y), "black", label="Wall")
 
         # Draw goals
-        for x, y in self.goals:
-            draw_cell((x, y), "green" , label="Goal")
+        for goal_pos in self.goals:
+            draw_cell((goal_pos.x, goal_pos.y), "green", label="Goal")
 
         # Draw resources
-        for x, y in self.resources:
-            draw_cell((x, y), "blue", label="Resource")
+        for resource_pos in self.resources:
+            draw_cell((resource_pos.x, resource_pos.y), "blue", label="Resource")
 
         # Draw hazards
-        for x, y in self.hazards:
-            draw_cell((x, y), "orange", label="Hazard")
+        for hazard_pos in self.hazards:
+            draw_cell((hazard_pos.x, hazard_pos.y), "orange", label="Hazard")
 
         # Draw agents
         for agent_id, info in self.agents.items():

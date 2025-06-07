@@ -146,6 +146,8 @@ class BaseAgent(ABC):
         self.goals_reached += 1
         if self.carrying_resource:
             self.carrying_resource = False
+            return True
+        return False
     
     def record_collision(self):
         """Record a collision event for statistics."""

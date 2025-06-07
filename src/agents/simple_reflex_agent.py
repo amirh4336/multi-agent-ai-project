@@ -57,9 +57,10 @@ class SimpleReflexAgent(BaseAgent):
         Returns:
             Perception object with current environmental state
         """
-        # This would interface with actual environment implementation
-        # For now, return placeholder - actual implementation depends on environment API
-        return environment.get_agent_perception(self.agent_id)
+        perception = environment.get_agent_perception(self.agent_id)
+        # Ensure perception reflects current agent state
+        perception.carrying_resource = self.carrying_resource
+        return perception
     
     def decide_action(self, perception: Perception) -> Tuple[Action, str]:
         """
@@ -86,10 +87,14 @@ class SimpleReflexAgent(BaseAgent):
         
         # Priority 3: Goal Seeking
         if perception.carrying_resource:
-            action, reason = self._seek_goal(perception)
-            if action:
+            if self._can_drop_resource(perception):
                 self.rule_activation_count['goal_seeking'] += 1
-                return action, f"Goal Seeking: {reason}"
+                return Action.DROP, "Goal Seeking: Dropping resource at goal"
+            else:
+                action, reason = self._seek_goal(perception)
+                if action:
+                    self.rule_activation_count['goal_seeking'] += 1
+                    return action, f"Goal Seeking: {reason}"
         
         # Priority 4: Resource Pursuit
         if not perception.carrying_resource:
@@ -155,20 +160,25 @@ class SimpleReflexAgent(BaseAgent):
         Returns:
             True if can collect an adjacent resource
         """
+        print("perception.carrying_resource: ", perception.carrying_resource)
         if perception.carrying_resource:
             return False
+
+        current_cell = perception.visible_cells.get(perception.current_position)
+        return current_cell == CellType.RESOURCE
+    
+    def _can_drop_resource(self, perception: Perception) -> bool:
+        """
+        Check if there's a goal in adjacent cell and agent is carrying resource.
         
-        for action, (dx, dy) in DIRECTION_MAPPINGS.items():
-            adjacent_pos = Position(
-                perception.current_position.x + dx,
-                perception.current_position.y + dy
-            )
+        Args:
+            perception: Current perception data
             
-            cell_type = perception.visible_cells.get(adjacent_pos)
-            if cell_type == CellType.RESOURCE:
-                return True
-        
-        return False
+        Returns:
+            True if can drop an adjacent resource
+        """
+        current_cell = perception.visible_cells.get(perception.current_position)
+        return current_cell == CellType.GOAL
     
     def _seek_goal(self, perception: Perception) -> Tuple[Optional[Action], str]:
         """
@@ -241,7 +251,7 @@ class SimpleReflexAgent(BaseAgent):
             )
             
             cell_type = perception.visible_cells.get(new_pos)
-            if cell_type and cell_type != CellType.WALL:
+            if cell_type and cell_type != CellType.WALL and cell_type != CellType.HAZARD:
                 # Check if position is not occupied by another agent
                 if new_pos not in perception.visible_agents:
                     valid_moves.append(action)
