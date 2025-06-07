@@ -120,12 +120,12 @@ class InteractiveSimulation:
         start_x = 1 - total_button_width - margin_x
         
         # Next Step button
-        ax_next = self.fig.add_axes([start_x, margin_y, button_width, button_height])
+        ax_next = self.fig.add_axes([start_x + button_width + margin_x, margin_y, button_width, button_height])
         self.button_next = Button(ax_next, 'Next Step', color='lightblue', hovercolor='blue')
         self.button_next.on_clicked(self.next_step)
         
         # Previous Step button
-        ax_prev = self.fig.add_axes([start_x + button_width + margin_x, margin_y, button_width, button_height])
+        ax_prev = self.fig.add_axes([start_x, margin_y, button_width, button_height])
         self.button_prev = Button(ax_prev, 'Previous', color='lightblue', hovercolor='blue')
         self.button_prev.on_clicked(self.prev_step)
         
