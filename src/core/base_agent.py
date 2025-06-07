@@ -171,8 +171,8 @@ class BaseAgent(ABC):
         return self.energy > 0
     
     def get_performance_metrics(self, total_steps: int, 
-                              explored_cells: int, 
-                              total_cells: int) -> PerformanceMetrics:
+                            explored_cells: int, 
+                            total_cells: int) -> PerformanceMetrics:
         """
         Calculate performance metrics for this agent.
         

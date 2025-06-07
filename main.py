@@ -16,6 +16,7 @@ def simulate():
         agent_instances.append(agent)
     
     # Simulation loop
+    print(agent_instances)
     max_steps = 100
     for step in range(max_steps):
         print(f"\n--- Step {step} ---")
