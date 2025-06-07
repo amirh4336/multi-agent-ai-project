@@ -204,7 +204,7 @@ class InteractiveSimulation:
         if not self.auto_running:
             self.auto_running = True
             self.button_pause.label.set_text('Pause')
-            self.anim = FuncAnimation(self.fig, self.next_step, interval=1000, cache_frame_data=False)
+            self.anim = FuncAnimation(self.fig, self.next_step, interval=500, cache_frame_data=False)
             self.fig.canvas.draw()
     
     def toggle_pause(self, event):
@@ -219,7 +219,7 @@ class InteractiveSimulation:
                 return
             self.auto_running = True
             self.button_pause.label.set_text('Pause')
-            self.anim = FuncAnimation(self.fig, self.next_step, interval=1000, cache_frame_data=False)
+            self.anim = FuncAnimation(self.fig, self.next_step, interval=500, cache_frame_data=False)
             self.fig.canvas.draw()
     
     def stop_auto(self):
