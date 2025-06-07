@@ -187,7 +187,7 @@ class SimpleReflexAgent(BaseAgent):
         
         # Find closest goal
         closest_goal = min(goal_positions, 
-                          key=lambda pos: perception.current_position.distance_to(pos))
+                        key=lambda pos: perception.current_position.distance_to(pos))
         
         # Move toward closest goal
         move_action = self._get_move_toward(perception.current_position, closest_goal, perception)
@@ -213,7 +213,7 @@ class SimpleReflexAgent(BaseAgent):
         
         # Find closest resource
         closest_resource = min(resource_positions,
-                             key=lambda pos: perception.current_position.distance_to(pos))
+                            key=lambda pos: perception.current_position.distance_to(pos))
         
         # Move toward closest resource
         move_action = self._get_move_toward(perception.current_position, closest_resource, perception)
@@ -251,23 +251,36 @@ class SimpleReflexAgent(BaseAgent):
         else:
             return Action.WAIT, "No valid moves available, waiting"
     
-    # def _get_move_toward(self, from_pos: Position, to_pos: Position, 
-    #                     perception: Perception) -> Optional[Action]:
-    #     """
-    #     Get the best move action to approach target position.
-        
-    #     Args:
-    #         from_pos: Current position
-    #         to_pos: Target position
-    #         perception: Current perception data
-            
-    #     Returns:
-    #         Best movement action or None if no valid moves
-    #     """
-    #     dx = to_pos.x - from_pos.x
-    #     dy = to_pos.y - from_pos.y
-        
-    #     # Prioritize moves that reduce distance
-    #     preferred_moves = []
-        
-    #     if dx > 0
+    def _get_move_toward(self, from_pos: Position, to_pos: Position, 
+                    perception: Perception) -> Optional[Action]:
+        """
+        Get the best move action to approach target position.
+
+        Args:
+            from_pos: Current position
+            to_pos: Target position
+            perception: Current perception data
+
+        Returns:
+            Best movement action or None if no valid moves
+        """
+        best_action = None
+        min_distance = float('inf')
+
+        for action, (dx, dy) in DIRECTION_MAPPINGS.items():
+            new_pos = Position(from_pos.x + dx, from_pos.y + dy)
+            if new_pos not in perception.visible_cells:
+                continue
+
+            cell_type = perception.visible_cells[new_pos]
+            if cell_type in [CellType.WALL, CellType.HAZARD]:
+                continue
+            if new_pos in perception.visible_agents:
+                continue
+
+            distance = new_pos.distance_to(to_pos)
+            if distance < min_distance:
+                min_distance = distance
+                best_action = action
+
+        return best_action
