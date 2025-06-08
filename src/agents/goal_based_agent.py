@@ -521,6 +521,7 @@ class GoalBasedAgent(BaseAgent):
             
             # Check if position is valid
             cell_type = perception.visible_cells.get(new_pos)
+            print("cell", cell_type)
             if cell_type == CellType.WALL or new_pos in perception.visible_agents:
                 return False
         
