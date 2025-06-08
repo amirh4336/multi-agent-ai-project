@@ -253,18 +253,18 @@ class ModelBasedReflexAgent(BaseAgent):
         visible_goals = perception.get_cells_of_type(CellType.GOAL)
         if visible_goals:
             closest_goal = min(visible_goals,
-                             key=lambda pos: perception.current_position.distance_to(pos))
+                                key=lambda pos: perception.current_position.distance_to(pos))
             move_action = self._get_smart_move_toward(perception.current_position, 
-                                                   closest_goal, perception)
+                                                    closest_goal, perception)
             if move_action:
                 return move_action, f"Moving toward visible goal at {closest_goal}"
         
         # Use known goals from internal model
         if self.known_goals:
             closest_known_goal = min(self.known_goals,
-                                   key=lambda pos: perception.current_position.distance_to(pos))
+                                    key=lambda pos: perception.current_position.distance_to(pos))
             move_action = self._get_smart_move_toward(perception.current_position,
-                                                   closest_known_goal, perception)
+                                                    closest_known_goal, perception)
             if move_action:
                 return move_action, f"Moving toward known goal at {closest_known_goal}"
         
@@ -285,7 +285,6 @@ class ModelBasedReflexAgent(BaseAgent):
         if visible_resources:
             closest_resource = min(visible_resources,
                                     key=lambda pos: perception.current_position.distance_to(pos))
-            print("closeet", closest_resource)
             move_action = self._get_smart_move_toward(perception.current_position,
                                                     closest_resource, perception)
             if move_action:
@@ -416,8 +415,6 @@ class ModelBasedReflexAgent(BaseAgent):
                 best_action = action
 
         return best_action
-
-
     
     def get_model_statistics(self) -> Dict[str, int]:
         """

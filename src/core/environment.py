@@ -22,7 +22,8 @@ class GridWorld:
         self.agents = {agent["id"]: {
             "position": Position(*agent["position"]),
             "energy": agent["energy"],
-            "carrying": False
+            "carrying": False,
+            "type" : agent["type"]
         } for agent in config["agents"]}
 
     def register_agent_instance(self, agent: BaseAgent):
