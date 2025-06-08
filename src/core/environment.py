@@ -183,9 +183,9 @@ class GridWorld:
             x = info["position"].x
             y = info["position"].y
             triangle = patches.RegularPolygon((x + 0.5, y + 0.5), numVertices=3, radius=0.4, orientation=0,
-                                            color='purple')
+                                            color='red')
             ax_grid.add_patch(triangle)
-            ax_grid.text(x + 0.5, y + 0.2, agent_id, ha='center', va='center', color='white', fontsize=8)
+            ax_grid.text(x + 0.5, y + 0.2, agent_id, ha='center', va='center', color='black', fontsize=8)
 
         ax_grid.set_aspect('equal')
         ax_grid.invert_yaxis()

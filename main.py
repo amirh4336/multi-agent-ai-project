@@ -250,20 +250,20 @@ class InteractiveSimulation:
         self.ax_grid.set_yticklabels([])
         self.ax_grid.grid(True)
         
-        def draw_cell(pos, color, label=None):
+        def draw_cell(pos, color, label=None , label_color = "black"):
             rect = patches.Rectangle(pos, 1, 1, facecolor=color, edgecolor='black')
             self.ax_grid.add_patch(rect)
             if label:
-                self.ax_grid.text(pos[0]+0.5, pos[1]+0.5, label, ha='center', va='center', fontsize=10)
+                self.ax_grid.text(pos[0]+0.5, pos[1]+0.5, label, ha='center', va='center' , color=label_color, fontsize=10)
         
         for wall_pos in self.env.walls:
-            draw_cell((wall_pos.x, wall_pos.y), "black", label="Wall")
+            draw_cell((wall_pos.x, wall_pos.y), "black", label="W" , label_color="white")
         for goal_pos in self.env.goals:
-            draw_cell((goal_pos.x, goal_pos.y), "green", label="Goal")
+            draw_cell((goal_pos.x, goal_pos.y), "green", label="G")
         for resource_pos in self.env.resources:
-            draw_cell((resource_pos.x, resource_pos.y), "blue", label="Resource")
+            draw_cell((resource_pos.x, resource_pos.y), "blue", label="R")
         for hazard_pos in self.env.hazards:
-            draw_cell((hazard_pos.x, hazard_pos.y), "orange", label="Hazard")
+            draw_cell((hazard_pos.x, hazard_pos.y), "orange", label="H")
         
         for agent_id, info in self.env.agents.items():
             x = info["position"].x

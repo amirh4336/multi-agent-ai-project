@@ -187,7 +187,6 @@ class GoalBasedAgent(BaseAgent):
             safe_positions = dict_positions["safe_positions"]
             preferred_safe_moves = dict_positions["preferred_safe_moves"]
 
-            # print(f"safe_positions: {safe_positions} , preferred_safe_moves: {preferred_safe_moves}")
 
             if preferred_safe_moves :
                 closest_safe = min(preferred_safe_moves, 
@@ -245,6 +244,7 @@ class GoalBasedAgent(BaseAgent):
         
         # Exploration goals
         exploration_targets = self._find_exploration_targets(perception)
+
         for explore_pos in exploration_targets:
             distance = perception.current_position.distance_to(explore_pos)
             utility = UTILITY_VALUES['exploration'] / (distance + 1)
@@ -259,7 +259,6 @@ class GoalBasedAgent(BaseAgent):
         # Select goal with highest utility
         if candidate_goals:
             best_goal = max(candidate_goals, key=lambda g: g.distance_adjusted_utility)
-            
             # Update statistics
             goal_type_key = f"{best_goal.goal_type}_selected"
             if goal_type_key in self.goal_selection_stats:
@@ -359,7 +358,7 @@ class GoalBasedAgent(BaseAgent):
         
         while open_set:
             _, current_g, current = heapq.heappop(open_set)
-			
+            
             if current == goal:
                 # Reconstruct path
                 path = []
@@ -367,8 +366,6 @@ class GoalBasedAgent(BaseAgent):
                     path.append(current)
                     current = came_from[current]
                 path.reverse()
-                print("path", path)
-                print("came_from" , came_from)
                 return path
             
             if current in visited:
@@ -378,7 +375,6 @@ class GoalBasedAgent(BaseAgent):
             # Explore neighbors
             for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
                 neighbor = Position(current.x + dx, current.y + dy)
-                
                 # Skip if neighbor is obstacle or out of bounds
                 if self._is_obstacle(neighbor, perception):
                     continue
@@ -391,6 +387,7 @@ class GoalBasedAgent(BaseAgent):
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g
                     f_score[neighbor] = tentative_g + self._manhattan_distance(neighbor, goal)
+                    
                     heapq.heappush(open_set, (f_score[neighbor], tentative_g, neighbor))
         
         # No path found
@@ -408,7 +405,7 @@ class GoalBasedAgent(BaseAgent):
             return True
         
         # Check out of bounds
-        if position not in perception.visible_cells:
+        if position.x < 0 or position.y < 0:
             return True
         
         # Check visible cells
@@ -587,7 +584,6 @@ class GoalBasedAgent(BaseAgent):
         )
         safe_positions = []
         preferred_positions = []
-        print(f"test" , all_available_positions)
         for position, cell_type in all_available_positions:
             if cell_type in [CellType.EMPTY, CellType.RESOURCE, CellType.GOAL]:
                 if position not in perception.visible_agents:
@@ -609,10 +605,10 @@ class GoalBasedAgent(BaseAgent):
         targets = []
         
         # Look for edges of visible area
-        for position in perception.visible_cells.keys():
+        for position , cell_type in perception.visible_cells.items():
             # Check if position is at edge of perception
             if self._is_edge_position(position, perception):
-                if position not in self.visited_positions:
+                if position not in self.visited_positions and cell_type != CellType.WALL:
                     targets.append(position)
         
         # If no edge targets, look for any unvisited visible positions
@@ -629,6 +625,9 @@ class GoalBasedAgent(BaseAgent):
         neighbor_count = 0
         for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
             neighbor = Position(position.x + dx, position.y + dy)
+            # look for bounder
+            if neighbor in perception.visible_cells and (neighbor.x < 0 or neighbor.y < 0):
+                continue
             if neighbor in perception.visible_cells:
                 neighbor_count += 1
         return neighbor_count < 4
