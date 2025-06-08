@@ -75,6 +75,7 @@ class SimpleReflexAgent(BaseAgent):
         
         # Priority 1: Hazard Avoidance
         if self._is_in_hazard(perception):
+            self.energy = self.energy - 4
             action, reason = self._avoid_hazard(perception)
             if action:
                 self.rule_activation_count['hazard_avoidance'] += 1
@@ -160,7 +161,6 @@ class SimpleReflexAgent(BaseAgent):
         Returns:
             True if can collect an adjacent resource
         """
-        print("perception.carrying_resource: ", perception.carrying_resource)
         if perception.carrying_resource:
             return False
 
@@ -251,7 +251,7 @@ class SimpleReflexAgent(BaseAgent):
             )
             
             cell_type = perception.visible_cells.get(new_pos)
-            if cell_type and cell_type != CellType.WALL and cell_type != CellType.HAZARD:
+            if cell_type and cell_type != CellType.WALL:
                 # Check if position is not occupied by another agent
                 if new_pos not in perception.visible_agents:
                     valid_moves.append(action)
@@ -283,7 +283,7 @@ class SimpleReflexAgent(BaseAgent):
                 continue
 
             cell_type = perception.visible_cells[new_pos]
-            if cell_type in [CellType.WALL, CellType.HAZARD]:
+            if cell_type in [CellType.WALL]:
                 continue
             if new_pos in perception.visible_agents:
                 continue

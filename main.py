@@ -38,7 +38,7 @@ class InteractiveSimulation:
         
         print("Interactive simulation initialized!")
         print(f"Agents: {[agent.agent_id for agent in self.agent_instances]}")
-        print("Use 'Next Step', 'Previous', 'Auto Run', or 'Pause/Resume' buttons.")
+        print("Use 'Next', 'Previous', 'Auto Run', or 'Pause/Resume' buttons.")
     
     def save_state(self):
         """Save the current simulation state to history"""

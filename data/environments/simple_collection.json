@@ -2,7 +2,8 @@
   "grid_size": [8, 8],
   "walls": [
     [1, 2],
-    [3, 4]
+    [3, 4],
+    [1, 0]
   ],
   "goals": [
     [7, 7],
@@ -20,16 +21,6 @@
     {
       "id": "agent_1",
       "position": [0, 0],
-      "energy": 100
-    },
-    {
-      "id": "agent_2",
-      "position": [7, 0],
-      "energy": 100
-    },
-    {
-      "id": "agent_032",
-      "position": [7, 1],
       "energy": 100
     }
   ]
