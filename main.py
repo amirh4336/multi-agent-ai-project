@@ -5,7 +5,7 @@ import matplotlib.patches as patches
 from matplotlib.widgets import Button
 from matplotlib.animation import FuncAnimation
 from src.core.environment import GridWorld
-from src.agents.simple_reflex_agent import SimpleReflexAgent
+from src.agents.model_based_reflex_agent import ModelBasedReflexAgent
 
 class InteractiveSimulation:
     def __init__(self, config_path: str):
@@ -18,7 +18,7 @@ class InteractiveSimulation:
         # Create agent instances
         self.agent_instances = []
         for agent_id, agent_data in agent_configs:
-            agent = SimpleReflexAgent(agent_id, agent_data['position'])
+            agent = ModelBasedReflexAgent(agent_id, agent_data['position'])
             self.agent_instances.append(agent)
             self.env.register_agent_instance(agent)
         

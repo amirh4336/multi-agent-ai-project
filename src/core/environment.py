@@ -95,8 +95,7 @@ class GridWorld:
                 pos = Position(x, y)
                 
                 # Skip walls (they block perception)
-                if pos in self.walls:
-                    continue
+                
                     
                 # Determine cell type
                 if pos in self.goals:
@@ -105,6 +104,8 @@ class GridWorld:
                     cell_type = CellType.RESOURCE
                 elif pos in self.hazards:
                     cell_type = CellType.HAZARD
+                elif pos in self.walls:
+                    cell_type = CellType.WALL
                 else:
                     cell_type = CellType.EMPTY
                     
