@@ -2,7 +2,7 @@
 Goal-Based Agent Implementation.
 
 This module implements the GoalBasedAgent class that incorporates deliberative
-planning capabilities with A* pathfinding and utility-based goal selection.
+planning capabilities with A* path finding and utility-based goal selection.
 """
 
 import heapq
@@ -30,7 +30,7 @@ class GoalBasedAgent(BaseAgent):
     
     Features:
     - Utility-based goal selection
-    - A* pathfinding algorithm
+    - A* path finding algorithm
     - Plan generation and execution
     - Dynamic replanning when plans become invalid
     - Adaptive response to changing conditions
@@ -73,8 +73,8 @@ class GoalBasedAgent(BaseAgent):
             'plans_completed': 0,
             'plans_abandoned': 0,
             'replanning_events': 0,
-            'pathfinding_calls': 0,
-            'pathfinding_failures': 0
+            'path_finding_calls': 0,
+            'path_finding_failures': 0
         }
         
         # Goal selection statistics
@@ -182,10 +182,29 @@ class GoalBasedAgent(BaseAgent):
         
         # Emergency hazard avoidance
         if self._is_in_hazard(perception):
-            safe_positions = self._find_safe_positions(perception)
-            if safe_positions:
+            dict_positions = self._find_safe_positions(perception)
+            
+            safe_positions = dict_positions["safe_positions"]
+            preferred_safe_moves = dict_positions["preferred_safe_moves"]
+
+            # print(f"safe_positions: {safe_positions} , preferred_safe_moves: {preferred_safe_moves}")
+
+            if preferred_safe_moves :
+                closest_safe = min(preferred_safe_moves, 
+                                key=lambda pos: perception.current_position.distance_to(pos))
+                distance = perception.current_position.distance_to(closest_safe)
+                utility = UTILITY_VALUES['hazard_avoidance'] / (distance + 1)
+                candidate_goals.append(Goal(
+                    goal_type='hazard_avoidance',
+                    target_position=closest_safe,
+                    base_utility=UTILITY_VALUES['hazard_avoidance'],
+                    distance_adjusted_utility=utility,
+                    description=f"Escape hazard to {closest_safe}"
+                ))
+            if safe_positions :
                 closest_safe = min(safe_positions, 
                                 key=lambda pos: perception.current_position.distance_to(pos))
+                # closest_safe = random.choice(safe_positions)
                 distance = perception.current_position.distance_to(closest_safe)
                 utility = UTILITY_VALUES['hazard_avoidance'] / (distance + 1)
                 candidate_goals.append(Goal(
@@ -328,7 +347,7 @@ class GoalBasedAgent(BaseAgent):
         Returns:
             List of positions representing the path, or empty list if no path found
         """
-        self.planning_stats['pathfinding_calls'] += 1
+        self.planning_stats['path_finding_calls'] += 1
         
         # Priority queue: (f_score, g_score, position)
         open_set = [(0, 0, start)]
@@ -339,7 +358,6 @@ class GoalBasedAgent(BaseAgent):
         visited = set()
         
         while open_set:
-            print(f"open_set: {open_set}")
             _, current_g, current = heapq.heappop(open_set)
 			
             if current == goal:
@@ -349,6 +367,8 @@ class GoalBasedAgent(BaseAgent):
                     path.append(current)
                     current = came_from[current]
                 path.reverse()
+                print("path", path)
+                print("came_from" , came_from)
                 return path
             
             if current in visited:
@@ -363,9 +383,6 @@ class GoalBasedAgent(BaseAgent):
                 if self._is_obstacle(neighbor, perception):
                     continue
                 
-                if neighbor not in perception.visible_cells:
-                    continue
-                
                 # Calculate tentative g_score
                 move_cost = self._get_move_cost(current, neighbor, perception)
                 tentative_g = g_score[current] + move_cost
@@ -374,11 +391,10 @@ class GoalBasedAgent(BaseAgent):
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g
                     f_score[neighbor] = tentative_g + self._manhattan_distance(neighbor, goal)
-                    print(open_set, (f_score[neighbor], tentative_g, neighbor))
                     heapq.heappush(open_set, (f_score[neighbor], tentative_g, neighbor))
         
         # No path found
-        self.planning_stats['pathfinding_failures'] += 1
+        self.planning_stats['path_finding_failures'] += 1
         return []
     
     def _manhattan_distance(self, pos1: Position, pos2: Position) -> float:
@@ -389,6 +405,10 @@ class GoalBasedAgent(BaseAgent):
         """Check if position is an obstacle."""
         # Check known walls
         if position in self.known_walls:
+            return True
+        
+        # Check out of bounds
+        if position not in perception.visible_cells:
             return True
         
         # Check visible cells
@@ -558,14 +578,31 @@ class GoalBasedAgent(BaseAgent):
         current_cell = perception.visible_cells.get(perception.current_position)
         return current_cell == CellType.HAZARD
     
-    def _find_safe_positions(self, perception: Perception) -> List[Position]:
+    def _find_safe_positions(self, perception: Perception) -> dict[str : List[Position]]:
         """Find safe positions to escape to."""
+        all_available_positions: Set[Tuple[Position, CellType]] = (
+            {(pos, CellType.EMPTY) for pos in self.known_empty} |
+            {(pos, CellType.GOAL) for pos in self.known_goals} |
+            {(pos, CellType.RESOURCE) for pos in self.known_resources}
+        )
         safe_positions = []
-        for position, cell_type in perception.visible_cells.items():
+        preferred_positions = []
+        print(f"test" , all_available_positions)
+        for position, cell_type in all_available_positions:
             if cell_type in [CellType.EMPTY, CellType.RESOURCE, CellType.GOAL]:
                 if position not in perception.visible_agents:
                     safe_positions.append(position)
-        return safe_positions
+                    if not self.carrying_resource and cell_type == CellType.RESOURCE:
+                        preferred_positions.append(position)
+                    elif self.carrying_resource and cell_type == CellType.GOAL:
+                        preferred_positions.append(position)
+                    elif position not in self.visited_positions:
+                        preferred_positions.append(position) 
+
+        return {
+            "safe_positions" : safe_positions,
+            "preferred_safe_moves" : preferred_positions
+        }
     
     def _find_exploration_targets(self, perception: Perception) -> List[Position]:
         """Find good exploration targets."""

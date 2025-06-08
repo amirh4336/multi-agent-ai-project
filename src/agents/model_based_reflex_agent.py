@@ -201,9 +201,7 @@ class ModelBasedReflexAgent(BaseAgent):
                         else :
                             action, reason = self._strategic_goal_navigation(perception)
                             preferred_moves.append(action)
-        print(preferred_moves)
         if preferred_moves:
-            print(preferred_moves)
             return random.choice(preferred_moves), "Moving to base on goal or resource safe position"
         elif safe_moves:
             return random.choice(safe_moves), "Moving to safe adjacent cell"
