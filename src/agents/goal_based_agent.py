@@ -256,9 +256,13 @@ class GoalBasedAgent(BaseAgent):
                 description=f"Explore area at {explore_pos}"
             ))
         
+        candidate_available = [
+            goal for goal in candidate_goals
+            if goal.target_position not in perception.visible_agents
+        ]
         # Select goal with highest utility
-        if candidate_goals:
-            best_goal = max(candidate_goals, key=lambda g: g.distance_adjusted_utility)
+        if candidate_available:
+            best_goal = max(candidate_available, key=lambda g: g.distance_adjusted_utility)
             # Update statistics
             goal_type_key = f"{best_goal.goal_type}_selected"
             if goal_type_key in self.goal_selection_stats:
@@ -471,7 +475,7 @@ class GoalBasedAgent(BaseAgent):
             if self.current_goal.goal_type == 'resource_collection':
                 # Check if resource still exists
                 target_cell = perception.visible_cells.get(self.current_goal.target_position)
-                if target_cell is not None and target_cell != CellType.RESOURCE:
+                if target_cell is not None and target_cell != CellType.RESOURCE and target_cell in perception.visible_agents:
                     if self.current_goal.target_position not in self.known_resources:
                         return False
             elif self.current_goal.goal_type == 'resource_delivery':

@@ -330,7 +330,6 @@ class InteractiveSimulation:
 
             agent_color = self.env.agents[agent_id]["bg_color"]
             
-            print(agent)
             stats_text = f"{agent_id}\n"
             stats_text += f"Color: {agent_color}\n" 
             stats_text += f"Energy: {basic_stats['energy_remaining']}/100\n"
