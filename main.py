@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.widgets import Button
 from matplotlib.animation import FuncAnimation
+from src.agents.goal_based_agent import GoalBasedAgent
 from src.agents.simple_reflex_agent import SimpleReflexAgent
 from src.core.environment import GridWorld
 from src.agents.model_based_reflex_agent import ModelBasedReflexAgent
@@ -20,6 +21,8 @@ class InteractiveSimulation:
         self.agent_instances = []
         for agent_id, agent_data in agent_configs:
             match agent_data["type"]:
+                case "goal":
+                    agent = GoalBasedAgent(agent_id, agent_data['position'])
                 case "module":
                     agent = ModelBasedReflexAgent(agent_id, agent_data['position'])
                 case "simple":

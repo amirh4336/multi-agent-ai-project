@@ -19,16 +19,10 @@
   "hazards": [[0, 1]],
   "agents": [
     {
-      "id": "agent_simple",
+      "id": "agent",
       "position": [0, 2],
       "energy": 100,
-      "type": "simple"
-    },
-    {
-      "id": "agent_module",
-      "position": [0, 0],
-      "energy": 100,
-      "type": "module"
+      "type": "goal"
     }
   ]
 }
