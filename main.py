@@ -1,5 +1,6 @@
 import json
 import copy
+from turtle import bgcolor
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.widgets import Button
@@ -268,11 +269,18 @@ class InteractiveSimulation:
         for agent_id, info in self.env.agents.items():
             x = info["position"].x
             y = info["position"].y
+
+            current_energy = 0
+            for agent in self.agent_instances:
+                if agent.agent_id == agent_id:
+                    current_energy = agent.energy
+                    break
+            
             triangle = patches.RegularPolygon((x + 0.5, y + 0.5), numVertices=3, radius=0.4, 
-                                                orientation=0, color='purple')
+                                                orientation=0, color=info["bg_color"])
             self.ax_grid.add_patch(triangle)
-            self.ax_grid.text(x + 0.5, y + 0.2, agent_id, ha='center', va='center', 
-                                color='white', fontsize=8)
+            self.ax_grid.text(x + 0.5, y + 0.2, current_energy, ha='center', va='center', 
+                                color='black', fontsize=8)
         
         self.ax_grid.set_aspect('equal')
         self.ax_grid.invert_yaxis()
@@ -319,8 +327,12 @@ class InteractiveSimulation:
                 explored_cells=explored_cells,
                 total_cells=total_cells
             )
+
+            agent_color = self.env.agents[agent_id]["bg_color"]
             
+            print(agent)
             stats_text = f"{agent_id}\n"
+            stats_text += f"Color: {agent_color}\n" 
             stats_text += f"Energy: {basic_stats['energy_remaining']}/100\n"
             stats_text += f"Actions: {basic_stats['actions_taken']}\n"
             stats_text += f"Resources: {basic_stats['resources_collected']}\n"

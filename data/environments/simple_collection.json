@@ -19,10 +19,25 @@
   "hazards": [[0, 1]],
   "agents": [
     {
-      "id": "agent",
+      "id": "simple_agent",
+      "position": [0, 0],
+      "energy": 100,
+      "type": "simple",
+      "bg_color": "red"
+    },
+    {
+      "id": "module_agent",
+      "position": [7, 0],
+      "energy": 100,
+      "type": "module",
+      "bg_color": "purple"
+    },
+    {
+      "id": "goal_agent",
       "position": [0, 2],
       "energy": 100,
-      "type": "goal"
+      "type": "goal",
+      "bg_color": "black"
     }
   ]
 }

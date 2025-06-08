@@ -23,7 +23,8 @@ class GridWorld:
             "position": Position(*agent["position"]),
             "energy": agent["energy"],
             "carrying": False,
-            "type" : agent["type"]
+            "type" : agent["type"],
+            "bg_color" : agent["bg_color"]
         } for agent in config["agents"]}
 
     def register_agent_instance(self, agent: BaseAgent):
@@ -136,70 +137,6 @@ class GridWorld:
         """Calculate number of cells explored by agent (simplified estimation)."""
         # This is a simplified version - in practice you'd track visited positions
         return min(agent.actions_taken * 2, self.grid_size[0] * self.grid_size[1])
-
-    def render(self):
-        # Calculate figure height to accommodate statistics
-        num_agents = len(self.agent_instances)
-        stats_height = max(3, num_agents * 0.8)  # Height for statistics display
-        
-        fig = plt.figure(figsize=(max(12, self.grid_size[0] * 1.2), 
-                                self.grid_size[1] + stats_height))
-        
-        # Create main grid subplot
-        ax_grid = plt.subplot2grid((2, 1), (0, 0), rowspan=1)
-        ax_grid.set_xlim(0, self.grid_size[0])
-        ax_grid.set_ylim(0, self.grid_size[1])
-        ax_grid.set_xticks(range(self.grid_size[0] + 1))
-        ax_grid.set_yticks(range(self.grid_size[1] + 1))
-        ax_grid.set_xticklabels([])
-        ax_grid.set_yticklabels([])
-        ax_grid.grid(True)
-
-        # Cell drawing helper
-        def draw_cell(pos, color, label=None):
-            rect = patches.Rectangle(pos, 1, 1, facecolor=color, edgecolor='black')
-            ax_grid.add_patch(rect)
-            if label:
-                ax_grid.text(pos[0]+0.5, pos[1]+0.5, label, ha='center', va='center', fontsize=10)
-
-        # Draw walls
-        for wall_pos in self.walls:
-            draw_cell((wall_pos.x, wall_pos.y), "black", label="Wall")
-
-        # Draw goals
-        for goal_pos in self.goals:
-            draw_cell((goal_pos.x, goal_pos.y), "green", label="Goal")
-
-        # Draw resources
-        for resource_pos in self.resources:
-            draw_cell((resource_pos.x, resource_pos.y), "blue", label="Resource")
-
-        # Draw hazards
-        for hazard_pos in self.hazards:
-            draw_cell((hazard_pos.x, hazard_pos.y), "orange", label="Hazard")
-
-        # Draw agents
-        for agent_id, info in self.agents.items():
-            x = info["position"].x
-            y = info["position"].y
-            triangle = patches.RegularPolygon((x + 0.5, y + 0.5), numVertices=3, radius=0.4, orientation=0,
-                                            color='red')
-            ax_grid.add_patch(triangle)
-            ax_grid.text(x + 0.5, y + 0.2, agent_id, ha='center', va='center', color='black', fontsize=8)
-
-        ax_grid.set_aspect('equal')
-        ax_grid.invert_yaxis()
-        ax_grid.set_title(f"GridWorld Environment - Step {self.step_count}")
-
-        # Create statistics subplot
-        ax_stats = plt.subplot2grid((2, 1), (1, 0), rowspan=1)
-        ax_stats.axis('off')
-        
-        # Display agent statistics
-        self._display_agent_statistics(ax_stats)
-        
-        plt.tight_layout()
-        plt.show()
 
     def _display_agent_statistics(self, ax):
         """Display performance metrics and statistics for all agents."""
