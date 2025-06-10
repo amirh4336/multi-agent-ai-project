@@ -5,8 +5,8 @@
   "resources": [[5,6], [5,4], [6,5]],
   "hazards": [[5,3], [6,3], [3,6], [3,5], [7,5]],
   "agents": [
-    { "id": "viper", "position": [0,0], "energy": 80, "type": "simple", "bg_color": "firebrick" },
-    { "id": "storm", "position": [11,11], "energy": 80, "type": "goal", "bg_color": "darkslategray" },
-    { "id": "pyro", "position": [6,0], "energy": 80, "type": "module", "bg_color": "khaki" }
+    { "id": "viper", "position": [0,0], "energy": 80, "type": "simple", "bg_color": "red" },
+    { "id": "storm", "position": [11,11], "energy": 80, "type": "goal", "bg_color": "black" },
+    { "id": "pyro", "position": [6,0], "energy": 80, "type": "module", "bg_color": "purple" }
   ]
 }

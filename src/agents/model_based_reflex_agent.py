@@ -252,7 +252,7 @@ class ModelBasedReflexAgent(BaseAgent):
         if visible_goals:
             closest_goal = min(visible_goals,
                                 key=lambda pos: perception.current_position.distance_to(pos))
-            move_action = self._get_smart_move_toward(perception.current_position, 
+            move_action = self._get_move_toward(perception.current_position, 
                                                     closest_goal, perception)
             if move_action:
                 return move_action, f"Moving toward visible goal at {closest_goal}"
@@ -261,7 +261,7 @@ class ModelBasedReflexAgent(BaseAgent):
         if self.known_goals:
             closest_known_goal = min(self.known_goals,
                                     key=lambda pos: perception.current_position.distance_to(pos))
-            move_action = self._get_smart_move_toward(perception.current_position,
+            move_action = self._get_move_toward(perception.current_position,
                                                     closest_known_goal, perception)
             if move_action:
                 return move_action, f"Moving toward known goal at {closest_known_goal}"
@@ -280,10 +280,11 @@ class ModelBasedReflexAgent(BaseAgent):
         """
         # First check visible resources
         visible_resources = perception.get_cells_of_type(CellType.RESOURCE)
+        print( "visible",visible_resources)
         if visible_resources:
             closest_resource = min(visible_resources,
                                     key=lambda pos: perception.current_position.distance_to(pos))
-            move_action = self._get_smart_move_toward(perception.current_position,
+            move_action = self._get_move_toward(perception.current_position,
                                                     closest_resource, perception)
             if move_action:
                 return move_action, f"Moving toward visible resource at {closest_resource}"
@@ -292,7 +293,7 @@ class ModelBasedReflexAgent(BaseAgent):
         if self.known_resources:
             closest_known_resource = min(self.known_resources,
                                         key=lambda pos: perception.current_position.distance_to(pos))
-            move_action = self._get_smart_move_toward(perception.current_position,
+            move_action = self._get_move_toward(perception.current_position,
                                                     closest_known_resource, perception)
             if move_action:
                 return move_action, f"Moving toward known resource at {closest_known_resource}"
@@ -322,13 +323,13 @@ class ModelBasedReflexAgent(BaseAgent):
             cell_type = perception.visible_cells.get(new_pos)
             if cell_type and cell_type != CellType.WALL:
                 if new_pos not in perception.visible_agents:
-                    # Avoid known hazards unless no other choice
-                    if new_pos not in self.known_hazards:
-                        exploration_moves.append(action)
-                        
-                        # Prioritize unvisited positions
-                        if new_pos not in self.visited_positions:
-                            unvisited_moves.append(action)
+                    # # Avoid known hazards unless no other choice
+                    # if new_pos not in self.known_hazards:
+                    exploration_moves.append(action)
+                    
+                    # Prioritize unvisited positions
+                    if new_pos not in self.visited_positions:
+                        unvisited_moves.append(action)
         
         # Prefer unvisited positions for exploration
         if unvisited_moves:
@@ -340,11 +341,11 @@ class ModelBasedReflexAgent(BaseAgent):
         else:
             return Action.WAIT, "No safe exploration options available"
     
-    def _get_smart_move_toward(self, from_pos: Position, to_pos: Position,
-                            perception: Perception) -> Optional[Action]:
+    def _get_move_toward(self, from_pos: Position, to_pos: Position, 
+                    perception: Perception) -> Optional[Action]:
         """
-        Get intelligent move toward target using internal model knowledge.
-        
+        Get the best move action to approach target position.
+
         Args:
             from_pos: Current position
             to_pos: Target position
@@ -353,63 +354,23 @@ class ModelBasedReflexAgent(BaseAgent):
         Returns:
             Best movement action or None if no valid moves
         """
-
-        def is_valid_position(pos: Position) -> bool:
-            if pos.x < 0 or pos.y < 0:
-                return False
-            if pos in self.known_walls:
-                return False
-            if perception.visible_cells.get(pos) == CellType.WALL:
-                return False
-            if pos in perception.visible_agents:
-                return False
-            return True
-
-        def has_safe_alternative(excluded_pos: Position) -> bool:
-            for dx, dy in DIRECTION_MAPPINGS.values():
-                alt_pos = Position(from_pos.x + dx, from_pos.y + dy)
-                if alt_pos == excluded_pos:
-                    continue
-                if alt_pos in self.known_hazards:
-                    continue
-                if is_valid_position(alt_pos):
-                    return True
-            return False
-
-        def move_cost(pos: Position) -> int:
-            """
-            Estimate cost of moving into this position based on what agent knows.
-            Lower is better.
-            """
-            if pos in self.known_walls:
-                return float('inf')  # Can't go
-            if pos in self.known_hazards:
-                return 10  # Risky
-            if pos in self.known_resources:
-                return 1  # Might be good
-            if pos in self.known_empty or pos in self.visited_positions:
-                return 2
-            if pos in self.known_goals:
-                return 1  # Desirable
-            return 3  # Unknown or neutral
-
         best_action = None
-        lowest_total_cost = float('inf')
+        min_distance = float('inf')
 
         for action, (dx, dy) in DIRECTION_MAPPINGS.items():
             new_pos = Position(from_pos.x + dx, from_pos.y + dy)
-
-            if not is_valid_position(new_pos):
+            if new_pos not in perception.visible_cells:
                 continue
 
-            if new_pos in self.known_hazards and has_safe_alternative(new_pos):
+            cell_type = perception.visible_cells[new_pos]
+            if cell_type in [CellType.WALL]:
+                continue
+            if new_pos in perception.visible_agents:
                 continue
 
-            # Total cost = move cost + remaining estimated distance
-            total_cost = move_cost(new_pos) + new_pos.distance_to(to_pos)
-
-            if total_cost < lowest_total_cost:
-                lowest_total_cost = total_cost
+            distance = new_pos.distance_to(to_pos)
+            if distance < min_distance:
+                min_distance = distance
                 best_action = action
 
         return best_action
