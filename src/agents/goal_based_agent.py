@@ -179,7 +179,7 @@ class GoalBasedAgent(BaseAgent):
             Goal with highest utility or None if no goals available
         """
         candidate_goals = []
-        
+
         # Emergency hazard avoidance
         if self._is_in_hazard(perception):
             dict_positions = self._find_safe_positions(perception)
@@ -357,10 +357,8 @@ class GoalBasedAgent(BaseAgent):
         came_from: Dict[Position, Position] = {}
         g_score: Dict[Position, float] = {start: 0}
         f_score: Dict[Position, float] = {start: self._manhattan_distance(start, goal)}
-        
         visited = set()
-        
-        while open_set:
+        while open_set and open_set[0][2].x < 20 and open_set[0][2].y < 20:
             _, current_g, current = heapq.heappop(open_set)
             
             if current == goal:
@@ -521,7 +519,6 @@ class GoalBasedAgent(BaseAgent):
             
             # Check if position is valid
             cell_type = perception.visible_cells.get(new_pos)
-            print("cell", cell_type)
             if cell_type == CellType.WALL or new_pos in perception.visible_agents:
                 return False
         
