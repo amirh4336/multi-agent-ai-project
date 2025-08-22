@@ -7,7 +7,7 @@ must inherit from, ensuring consistent interface and behavior.
 
 from abc import ABC, abstractmethod
 from typing import Tuple, Dict, Any, Optional
-from .data_structures import Position, Action, Perception, AgentState, PerformanceMetrics , INITIAL_ENERGY
+from .data_structures import Position, Action, Perception, AgentState, PerformanceMetrics
 
 class BaseAgent(ABC):
     """
@@ -17,7 +17,7 @@ class BaseAgent(ABC):
     that all agent types must implement.
     """
     
-    def __init__(self, agent_id: str, position: Position):
+    def __init__(self, agent_id: str, position: Position , initial_energy :int):
         """
         Initialize base agent with essential properties.
         
@@ -27,7 +27,7 @@ class BaseAgent(ABC):
         """
         self.agent_id = agent_id
         self.position = position
-        self.energy = INITIAL_ENERGY
+        self.energy = initial_energy
         self.carrying_resource = False
         self.last_action: Optional[Action] = None
         

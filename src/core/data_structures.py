@@ -152,7 +152,7 @@ class PerformanceMetrics:
 
 # Constants
 PERCEPTION_RANGE = 2  # 5x5 grid (2 cells in each direction)
-INITIAL_ENERGY = 100
+# INITIAL_ENERGY = 100
 ENERGY_COST_PER_ACTION = 1
 ENERGY_COST_PER_MOVE = 1
 ENERGY_COST_HAZARD = 5

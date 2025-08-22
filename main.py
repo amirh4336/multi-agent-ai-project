@@ -23,11 +23,11 @@ class InteractiveSimulation:
         for agent_id, agent_data in agent_configs:
             match agent_data["type"]:
                 case "goal":
-                    agent = GoalBasedAgent(agent_id, agent_data['position'])
+                    agent = GoalBasedAgent(agent_id, agent_data['position'], agent_data["energy"])
                 case "module":
-                    agent = ModelBasedReflexAgent(agent_id, agent_data['position'])
+                    agent = ModelBasedReflexAgent(agent_id, agent_data['position'], agent_data["energy"])
                 case "simple":
-                    agent = SimpleReflexAgent(agent_id, agent_data['position'])
+                    agent = SimpleReflexAgent(agent_id, agent_data['position'] , agent_data["energy"])
 
             self.agent_instances.append(agent)
             self.env.register_agent_instance(agent)

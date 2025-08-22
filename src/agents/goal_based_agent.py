@@ -44,7 +44,7 @@ class GoalBasedAgent(BaseAgent):
     Utility adjustment: final_utility = base_utility / (distance + 1)
     """
     
-    def __init__(self, agent_id: str, position: Position):
+    def __init__(self, agent_id: str, position: Position , initial_energy: int):
         """
         Initialize Goal-Based Agent.
         
@@ -52,7 +52,7 @@ class GoalBasedAgent(BaseAgent):
             agent_id: Unique identifier for the agent
             position: Initial position in the environment
         """
-        super().__init__(agent_id, position)
+        super().__init__(agent_id, position , initial_energy)
         
         # Planning system
         self.current_plan: List[PlanStep] = []

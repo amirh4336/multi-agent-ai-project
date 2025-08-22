@@ -28,7 +28,7 @@ class SimpleReflexAgent(BaseAgent):
     behavioral rules without maintaining internal state.
     """
     
-    def __init__(self, agent_id: str, position: Position):
+    def __init__(self, agent_id: str, position: Position , initial_energy: int):
         """
         Initialize Simple Reflex Agent.
         
@@ -36,7 +36,7 @@ class SimpleReflexAgent(BaseAgent):
             agent_id: Unique identifier for the agent
             position: Initial position in the environment
         """
-        super().__init__(agent_id, position)
+        super().__init__(agent_id, position , initial_energy)
         
         # Statistics for rule activation analysis
         self.rule_activation_count = {
@@ -133,6 +133,7 @@ class SimpleReflexAgent(BaseAgent):
             Tuple of (safe_move_action, reason_string)
         """
         safe_moves = []
+        preferred_moves = []
         
         for action, (dx, dy) in DIRECTION_MAPPINGS.items():
             new_pos = Position(
@@ -145,8 +146,16 @@ class SimpleReflexAgent(BaseAgent):
                 # Check if position is not occupied by another agent
                 if new_pos not in perception.visible_agents:
                     safe_moves.append(action)
-        
-        if safe_moves:
+                    if perception.carrying_resource: 
+                        if cell_type == CellType.GOAL:
+                            preferred_moves.append(action)
+                    
+                    if not perception.carrying_resource:
+                        if cell_type == CellType.RESOURCE:
+                            preferred_moves.append(action)
+        if preferred_moves:
+            return random.choice(preferred_moves), "Moving to preferred adjacent cell"
+        elif safe_moves:
             return random.choice(safe_moves), "Moving to safe adjacent cell"
         else:
             return Action.WAIT, "No safe moves available, waiting"

@@ -32,7 +32,7 @@ class ModelBasedReflexAgent(BaseAgent):
     5. Intelligent Exploration (Systematic exploration of unvisited areas)
     """
     
-    def __init__(self, agent_id: str, position: Position):
+    def __init__(self, agent_id: str, position: Position , initial_energy: int):
         """
         Initialize Model-Based Reflex Agent.
         
@@ -40,7 +40,7 @@ class ModelBasedReflexAgent(BaseAgent):
             agent_id: Unique identifier for the agent
             position: Initial position in the environment
         """
-        super().__init__(agent_id, position)
+        super().__init__(agent_id, position , initial_energy)
         
         # Internal world model
         self.visited_positions: Set[Position] = set()
@@ -280,7 +280,6 @@ class ModelBasedReflexAgent(BaseAgent):
         """
         # First check visible resources
         visible_resources = perception.get_cells_of_type(CellType.RESOURCE)
-        print( "visible",visible_resources)
         if visible_resources:
             closest_resource = min(visible_resources,
                                     key=lambda pos: perception.current_position.distance_to(pos))

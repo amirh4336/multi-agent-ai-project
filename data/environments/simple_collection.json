@@ -1,12 +1,39 @@
 {
-  "grid_size": [12, 12],
-  "walls": [[4,4], [5,5], [6,6], [4,6], [6,4]],
-  "goals": [[0,11], [11,0]],
-  "resources": [[5,6], [5,4], [6,5]],
-  "hazards": [[5,3], [6,3], [3,6], [3,5], [7,5]],
+  "grid_size": [8, 8],
+  "walls": [
+    [2, 2],
+    [3, 3]
+  ],
+  "goals": [
+    [7, 6],
+    [0, 7]
+  ],
+  "resources": [
+    [5, 5],
+    [2, 4]
+  ],
+  "hazards": [[1, 1]],
   "agents": [
-    { "id": "viper", "position": [0,0], "energy": 80, "type": "simple", "bg_color": "red" },
-    { "id": "storm", "position": [11,11], "energy": 80, "type": "goal", "bg_color": "black" },
-    { "id": "pyro", "position": [6,0], "energy": 80, "type": "module", "bg_color": "purple" }
+    {
+      "id": "simple",
+      "position": [0, 0],
+      "energy": 100,
+      "type": "simple",
+      "bg_color": "red"
+    },
+    {
+      "id": "module",
+      "position": [7, 7],
+      "energy": 100,
+      "type": "module",
+      "bg_color": "purple"
+    },
+    {
+      "id": "goal",
+      "position": [3, 0],
+      "energy": 100,
+      "type": "goal",
+      "bg_color": "black"
+    }
   ]
 }
